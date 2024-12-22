@@ -1,0 +1,54 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Rubik+Iso&display=swap'); */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.login-main {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  background-color: #F1F2F3;
+}
+
+.btn {
+  border: none;
+  background: #2CB1BC;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  text-transform: capitalize;
+  transition: all 0.3s linear;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #9ff1f7;
+}
+
+.alert {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1rem;
+  height: 2.1rem;
+}
+
+.alert-text {
+  margin-top: 0 !important;
+}
+
+.alert.danger {
+  background: rgb(255, 188, 188);
+  color: rgb(108, 23, 23);
+}
+
+.alert.success {
+  background-color: rgb(183, 236, 183);
+  color: rgb(28, 90, 28);
+}

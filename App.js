@@ -41,6 +41,7 @@ app.use(fileUpload({ useTempFiles: true }))
 
 
 app.use('/api/v1/auth', authRouter)
+app.use('/api/v1/menu',menuRouter);
 //app.use('/api/v1/users',usersRouter)
 
 // app.use('/protectedRoute', authenticateUser, (req, res) => {

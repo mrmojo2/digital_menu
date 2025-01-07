@@ -1,0 +1,36 @@
+// MenuItem Model
+const MenuItemSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: [true, 'Please provide item name'],
+        trim: true,
+    },
+    description: {
+        type: String,
+        required: [true, 'Please provide item description'],
+    },
+    price: {
+        type: Number,
+        required: [true, 'Please provide price'],
+    },
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: [true, 'Please provide category'],
+    },
+    image_url: {
+        type: String,
+        default: 'default-food-image.jpg',
+    },
+    customization_options: [{
+        name: String,
+        options: [{
+            name: String,
+            price_addition: Number,
+        }],
+    }],
+    is_available: {
+        type: Boolean,
+        default: true,
+    },
+}, { timestamps: true });

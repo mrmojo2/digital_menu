@@ -17,6 +17,10 @@ import { authenticateUser, authorizePermissions } from "./middlewares/atuh.js";
 
 
 import authRouter from './routes/authRoutes.js'
+import menuRouter from './routes/menuRoutes.js'
+import categoryrRouter from './routes/categoryRoutes.js'
+import tableRouter from './routes/tableRoutes.js'
+import orderRouter from './routes/orderRoutes.js'
 import usersRouter from './routes/userRoutes.js'
 
 
@@ -42,6 +46,9 @@ app.use(fileUpload({ useTempFiles: true }))
 
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/menu',menuRouter);
+app.use('/api/v1/category',categoryrRouter);
+app.use('/api/v1/tables',tableRouter);
+app.use('/api/v1/orders',orderRouter);
 //app.use('/api/v1/users',usersRouter)
 
 // app.use('/protectedRoute', authenticateUser, (req, res) => {

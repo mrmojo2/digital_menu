@@ -1,3 +1,6 @@
+import mongoose from "mongoose"
+
+
 // Table Model
 const TableSchema = new mongoose.Schema({
     table_number: {
@@ -19,3 +22,5 @@ const TableSchema = new mongoose.Schema({
         ref: 'Order',
     },
 }, { timestamps: true });
+
+export default mongoose.model('Table', TableSchema)

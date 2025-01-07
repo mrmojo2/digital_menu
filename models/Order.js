@@ -1,3 +1,6 @@
+import mongoose from "mongoose"
+
+
 // Order Model
 const OrderSchema = new mongoose.Schema({
     order_number: {
@@ -48,3 +51,5 @@ const OrderSchema = new mongoose.Schema({
         default: 'not_paid',
     },
 }, { timestamps: true });
+
+export default mongoose.model('Order', OrderSchema)

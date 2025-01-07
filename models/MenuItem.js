@@ -1,3 +1,6 @@
+import mongoose from "mongoose"
+
+
 // MenuItem Model
 const MenuItemSchema = new mongoose.Schema({
     name: {
@@ -34,3 +37,5 @@ const MenuItemSchema = new mongoose.Schema({
         default: true,
     },
 }, { timestamps: true });
+
+export default mongoose.model('MenuItem', MenuItemSchema)

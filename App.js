@@ -49,15 +49,6 @@ app.use('/api/v1/menu',menuRouter);
 app.use('/api/v1/category',categoryrRouter);
 app.use('/api/v1/tables',tableRouter);
 app.use('/api/v1/orders',orderRouter);
-//app.use('/api/v1/users',usersRouter)
-
-// app.use('/protectedRoute', authenticateUser, (req, res) => {
-//     res.send('this is a protected route')
-// })
-// app.use('/superProtectedRoute', authenticateUser, authorizePermissions('admin', 'owner'), (req, res) => {
-//     res.send('this is a  super protected route only for admins')
-// })
-
 
 
 app.use(notFoundMiddleware)

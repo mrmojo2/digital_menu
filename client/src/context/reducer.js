@@ -1,22 +1,22 @@
 import { initialState } from "./AppContext"
 
-const reducer = (state,action)=>{
-    switch(action.type){
+const reducer = (state, action) => {
+    switch (action.type) {
         case 'SET_LOADING_TRUE':
             return {
                 ...state,
-                loading:true
+                loading: true
             };
         case 'SET_LOADING_FALSE':
             return {
                 ...state,
-                loading:false
+                loading: false
             };
         case 'GET_USER_SUCCESS':
-            return{
+            return {
                 ...state,
-                loading:false,
-                user:action.payload.tokenUser,
+                loading: false,
+                user: action.payload.tokenUser,
             };
         case 'LOGIN_USER_SUCCESS':
             return {
@@ -25,65 +25,102 @@ const reducer = (state,action)=>{
                 user: action.payload.tokenUser,
             };
         case 'LOGIN_USER_FAIL':
-            return{
+            return {
                 ...state,
-                loading:false,
-                showAlert:true,
-                alertText:action.payload.msg,
+                loading: false,
+                showAlert: true,
+                alertText: action.payload.msg,
                 alertType: 'danger'
             };
         case 'LOGOUT_USER':
-            return{
+            return {
                 ...initialState,
-                loading:false
+                loading: false
             };
         case 'CLEAR_ALERT':
-            return{
+            return {
                 ...state,
-                showAlert:false,
-                alertText:null,
-                alertType:null
-            };
-        case 'SET_SEARCH_SUGGESTIONS':
-            return{
-                ...state,
-                searchSuggestions:action.payload,
-            };
-        case 'SET_SELECTED_LOCATION':
-            return{
-                ...state,
-                selectedLocation:action.payload,
+                showAlert: false,
+                alertText: null,
+                alertType: null
             };
         case 'SET_FORM_LOADING_TRUE':
-            return{
+            return {
                 ...state,
-                formLoading:true,
+                formLoading: true,
             };
-        case 'SET_FORM_LOADING_TRUE':
-            return{
+        case 'SET_FORM_LOADING_FALSE':
+            return {
                 ...state,
-                formLoading:true,
+                formLoading: false,
             };
-        case 'PROFILE_UPDATE_SUCCESS':
-            return{
+        case 'GET_CATEGORIES_SUCCESS':
+            return {
                 ...state,
-                user:action.payload.tokenUser,
-                formLoading:false,
-                showAlert:true,
-                alertType:'success',
-                alertText:'Profile Updated Successfully',
+                loading: false,
+                categories: action.payload,
             };
-        case 'PROFILE_UPDATE_FAIL':
-            return{
+        case 'CREATE_CATEGORY_SUCCESS':
+            return {
                 ...state,
-                formLoading:false,
-                showAlert:true,
-                alertType:'danger',
-                alertText:action.payload.msg
+                loading: false,
+                categories: [...state.categories, action.payload],
             };
-        
+        case 'GET_MENU_ITEMS_SUCCESS':
+            return {
+                ...state,
+                loading: false,
+                menuItems: action.payload,
+            };
+        case 'CREATE_MENU_ITEM_SUCCESS':
+            return {
+                ...state,
+                loading: false,
+                menuItems: [...state.menuItems, action.payload],
+            };
+        case 'GET_TABLES_SUCCESS':
+            return {
+                ...state,
+                loading: false,
+                tables: action.payload,
+            };
+        case 'CREATE_TABLE_SUCCESS':
+            return {
+                ...state,
+                loading: false,
+                tables: [...state.tables, action.payload],
+            };
+        case 'GET_ORDERS_SUCCESS':
+            return {
+                ...state,
+                loading: false,
+                orders: action.payload,
+            };
+        case 'CREATE_ORDER_SUCCESS':
+            return {
+                ...state,
+                loading: false,
+                currentOrder: action.payload,
+                orders: [...state.orders, action.payload],
+            };
+        case 'UPDATE_ORDER_STATUS_SUCCESS':
+            return {
+                ...state,
+                loading: false,
+                orders: state.orders.map(order =>
+                    order._id === action.payload._id ? action.payload : order
+                ),
+            };
+        case 'API_ERROR':
+            return {
+                ...state,
+                loading: false,
+                showAlert: true,
+                alertText: action.payload.msg || 'Something went wrong',
+                alertType: 'danger'
+            };
         default:
-            throw new Error('Unknows action: '+ action.type)
+            throw new Error('Unknown action: ' + action.type)
     }
 }
 

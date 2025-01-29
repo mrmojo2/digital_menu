@@ -1,7 +1,18 @@
-import React, { useState } from 'react'
+import { useState,useEffect } from 'react'
 import styled from 'styled-components'
+import { useMyContext } from '../context/AppContext';
 
 const Home = () => {
+
+  const { user, getOrders, getTables, getMenuItems, getCategories } = useMyContext();
+
+  useEffect(() => {
+    getOrders();
+    getTables();
+    getMenuItems();
+    getCategories();
+  }, []);
+
   const [tables, setTables] = useState([
     { id: 1, number: 1, seats: 2, available: true },
     { id: 2, number: 2, seats: 4, available: false },

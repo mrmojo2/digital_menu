@@ -16,6 +16,10 @@ const CategorySchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    thumbnail_url: {
+        type: String,
+        default:"https://res.cloudinary.com/ducxipxkt/image/upload/c_thumb,w_200,g_face/v1738131384/digital_menu/Categories/default.jpg",
+    }
 }, { timestamps: true });
 
 export default mongoose.model('Category', CategorySchema)

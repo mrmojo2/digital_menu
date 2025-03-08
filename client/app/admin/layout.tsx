@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { authApi } from "@/lib/api"
 import { useToast } from "@/components/ui/use-toast"
+// Update the imports to include our new loading component
+import AdminLoading from "./loading"
 
 // Skip authentication for login page
 const publicPaths = ["/admin/login"]
@@ -19,7 +21,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const router = useRouter()
   const { toast } = useToast()
+  // Update the state management section to include a loading state
   const [isMounted, setIsMounted] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<{ name: string; username: string; role: string } | null>(null)
 
   // Check if the current path is public
@@ -30,7 +34,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true)
 
     // Skip auth check for public paths
-    if (isPublicPath) return
+    if (isPublicPath) {
+      setIsLoading(false)
+      return
+    }
 
     const checkAuth = async () => {
       try {
@@ -38,6 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const { user } = await authApi.getCurrentUser()
         setUser(user)
         // Authentication successful
+        setIsLoading(false)
       } catch (error) {
         // If there's an error, redirect to login
         console.error("Authentication failed:", error)
@@ -47,6 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           variant: "destructive",
         })
         router.push("/admin/login")
+        setIsLoading(false)
       }
     }
 
@@ -56,6 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Handle logout
   const handleLogout = async () => {
     try {
+      // Change the logout method to GET
       await authApi.logout()
 
       // Clear user state
@@ -81,12 +91,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }
 
+  // Update the rendering logic to handle loading state
   // Don't render anything until we've checked auth
   if (!isMounted) return null
 
   // If it's a public path, just render the children
   if (isPublicPath) {
     return children
+  }
+
+  // Show loading screen while checking authentication
+  if (isLoading) {
+    return <AdminLoading />
   }
 
   const navigation = [
@@ -124,11 +140,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${
-                        pathname === item.href
+                      className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${pathname === item.href
                           ? "bg-muted text-primary"
                           : "text-muted-foreground hover:bg-muted hover:text-primary"
-                      }`}
+                        }`}
                     >
                       <item.icon className="h-5 w-5" />
                       {item.name}
@@ -152,9 +167,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`text-sm font-medium ${
-                    pathname === item.href ? "text-primary" : "text-muted-foreground hover:text-primary"
-                  }`}
+                  className={`text-sm font-medium ${pathname === item.href ? "text-primary" : "text-muted-foreground hover:text-primary"
+                    }`}
                 >
                   {item.name}
                 </Link>
@@ -181,11 +195,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${
-                  pathname === item.href
+                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${pathname === item.href
                     ? "bg-muted text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-primary"
-                }`}
+                  }`}
               >
                 <item.icon className="h-5 w-5" />
                 {item.name}

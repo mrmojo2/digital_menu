@@ -609,7 +609,7 @@ export default function AdminMenuPage() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="price">Price ($)</Label>
+                <Label htmlFor="price">Price (Rs)</Label>
                 <Input
                   id="price"
                   type="number"
@@ -715,7 +715,7 @@ export default function AdminMenuPage() {
                                 />
                               </div>
                               <div className="w-24">
-                                <Label htmlFor={`option-price-${customizationIndex}-${optionIndex}`}>Price ($)</Label>
+                                <Label htmlFor={`option-price-${customizationIndex}-${optionIndex}`}>Price (Rs)</Label>
                                 <Input
                                   id={`option-price-${customizationIndex}-${optionIndex}`}
                                   type="number"
@@ -836,7 +836,7 @@ export default function AdminMenuPage() {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <p className="font-bold">${item.price.toFixed(2)}</p>
+                        <p className="font-bold">Rs{item.price.toFixed(2)}</p>
                         {item.is_available === false && (
                           <p className="text-sm text-red-500 mt-1">Currently unavailable</p>
                         )}
@@ -892,7 +892,7 @@ export default function AdminMenuPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="font-bold">${item.price.toFixed(2)}</p>
+                      <p className="font-bold">Rs{item.price.toFixed(2)}</p>
                       {item.is_available === false && (
                         <p className="text-sm text-red-500 mt-1">Currently unavailable</p>
                       )}
@@ -955,7 +955,7 @@ export default function AdminMenuPage() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-price">Price ($)</Label>
+                <Label htmlFor="edit-price">Price (Rs)</Label>
                 <Input
                   id="edit-price"
                   type="number"
@@ -1069,7 +1069,7 @@ export default function AdminMenuPage() {
                               </div>
                               <div className="w-24">
                                 <Label htmlFor={`edit-option-price-${customizationIndex}-${optionIndex}`}>
-                                  Price ($)
+                                  Price (Rs)
                                 </Label>
                                 <Input
                                   id={`edit-option-price-${customizationIndex}-${optionIndex}`}
@@ -1144,7 +1144,7 @@ export default function AdminMenuPage() {
                 <strong>Item:</strong> {currentItem.name}
               </p>
               <p>
-                <strong>Price:</strong> $
+                <strong>Price:</strong> Rs
                 {typeof currentItem.price === "number" ? currentItem.price.toFixed(2) : currentItem.price}
               </p>
             </div>

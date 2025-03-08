@@ -1,5 +1,7 @@
 "use client"
 
+import { DialogFooter } from "@/components/ui/dialog"
+
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -12,14 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   categoryApi,
   menuApi,
@@ -323,7 +318,7 @@ export default function MenuPage() {
                           <div>
                             <p className="font-medium">{item.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              ${item.price.toFixed(2)} x {item.quantity}
+                              Rs{item.price.toFixed(2)} x {item.quantity}
                             </p>
                             {Object.keys(item.customOptions || {}).length > 0 && (
                               <div className="text-xs text-muted-foreground mt-1">
@@ -368,7 +363,7 @@ export default function MenuPage() {
                       <Separator />
                       <div className="flex justify-between font-bold">
                         <span>Total:</span>
-                        <span>${totalPrice.toFixed(2)}</span>
+                        <span>Rs{totalPrice.toFixed(2)}</span>
                       </div>
                       <Button className="w-full" onClick={placeOrder} disabled={isPlacingOrder}>
                         {isPlacingOrder ? "Placing Order..." : "Place Order"}
@@ -432,7 +427,7 @@ export default function MenuPage() {
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="font-bold">${item.price.toFixed(2)}</p>
+                          <p className="font-bold">Rs{item.price.toFixed(2)}</p>
                           {item.is_available === false && (
                             <p className="text-sm text-red-500 mt-1">Currently unavailable</p>
                           )}
@@ -480,7 +475,7 @@ export default function MenuPage() {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <p className="font-bold">${item.price.toFixed(2)}</p>
+                        <p className="font-bold">Rs{item.price.toFixed(2)}</p>
                         {item.is_available === false && (
                           <p className="text-sm text-red-500 mt-1">Currently unavailable</p>
                         )}
@@ -519,11 +514,15 @@ export default function MenuPage() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Customize Your Order</DialogTitle>
-            <DialogDescription>
-              {currentCustomizeItem?.name} - ${currentCustomizeItem?.price.toFixed(2)}
-            </DialogDescription>
+            <DialogDescription>{currentCustomizeItem?.name}</DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
+            {/* Display base price and current total at the top */}
+            <div className="flex justify-between items-center pb-2 border-b">
+              <span className="text-sm text-muted-foreground">Base price:</span>
+              <span>Rs{currentCustomizeItem?.price.toFixed(2)}</span>
+            </div>
+
             {currentCustomizeItem?.customization_options?.map((group, groupIndex) => (
               <div key={groupIndex} className="space-y-2">
                 <h3 className="font-medium">{group.name}</h3>
@@ -544,7 +543,7 @@ export default function MenuPage() {
                         </label>
                       </div>
                       {option.price_addition > 0 && (
-                        <span className="text-sm text-muted-foreground">+${option.price_addition.toFixed(2)}</span>
+                        <span className="text-sm text-muted-foreground">+Rs{option.price_addition.toFixed(2)}</span>
                       )}
                     </div>
                   ))}
@@ -552,18 +551,19 @@ export default function MenuPage() {
               </div>
             ))}
 
-            {customizationPrice > 0 && (
-              <div className="pt-2 border-t">
-                <div className="flex justify-between">
+            {/* Display the current total price prominently */}
+            <div className="mt-4 pt-4 border-t">
+              {customizationPrice > 0 && (
+                <div className="flex justify-between text-sm">
                   <span>Additional cost:</span>
-                  <span>${customizationPrice.toFixed(2)}</span>
+                  <span>Rs{customizationPrice.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between font-medium">
-                  <span>Total price:</span>
-                  <span>${(currentCustomizeItem?.price || 0 + customizationPrice).toFixed(2)}</span>
-                </div>
+              )}
+              <div className="flex justify-between font-medium text-lg mt-1">
+                <span>Total price:</span>
+                <span>Rs{((currentCustomizeItem?.price || 0) + customizationPrice).toFixed(2)}</span>
               </div>
-            )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCustomizeDialogOpen(false)}>

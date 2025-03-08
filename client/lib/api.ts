@@ -48,9 +48,10 @@ export const authApi = {
     })
   },
 
+  // Change the logout method to GET
   logout: async () => {
     return apiRequest<{ msg: string }>("/auth/logout", {
-      method: "POST",
+      method: "GET",
     })
   },
 
@@ -312,7 +313,7 @@ export interface Order {
   table: Table | string // Can be populated with Table or just the ID
   items: OrderItem[]
   total_amount: number
-  status: "pending" | "preparing" | "ready" | "served" | "cancelled"
+  status: "pending" | "preparing" | "served" | "complete" | "cancelled"
   created_at: string
   updated_at: string
 }
@@ -345,7 +346,7 @@ export interface OrderUpdateInput {
 
 // Order status update input
 export interface OrderStatusInput {
-  status: "pending" | "preparing" | "ready" | "served" | "cancelled"
+  status: "pending" | "preparing" | "served" | "complete" | "cancelled"
 }
 
 // Order-specific API functions

@@ -80,7 +80,7 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
+            <div className="text-2xl font-bold">Rs45,231.89</div>
             <p className="text-xs text-muted-foreground">+20.1% from last month</p>
           </CardContent>
         </Card>
@@ -98,7 +98,7 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$19.25</div>
+            <div className="text-2xl font-bold">Rs19.25</div>
             <p className="text-xs text-muted-foreground">+4.3% from last month</p>
           </CardContent>
         </Card>
@@ -133,7 +133,10 @@ export default function AdminDashboardPage() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} labelFormatter={(label) => `${label}`} />
+                      <Tooltip
+                        formatter={(value) => [`Rs${value}`, "Revenue"]}
+                        labelFormatter={(label) => `${label}`}
+                      />
                       <Line type="monotone" dataKey="revenue" stroke="#8884d8" strokeWidth={2} />
                     </RechartsLineChart>
                   </ResponsiveContainer>
@@ -190,7 +193,10 @@ export default function AdminDashboardPage() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} labelFormatter={(label) => `${label}`} />
+                      <Tooltip
+                        formatter={(value) => [`Rs${value}`, "Revenue"]}
+                        labelFormatter={(label) => `${label}`}
+                      />
                       <Bar dataKey="revenue" fill="#8884d8" radius={[4, 4, 0, 0]} />
                     </RechartsBarChart>
                   </ResponsiveContainer>
@@ -220,7 +226,7 @@ export default function AdminDashboardPage() {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} />
+                      <Tooltip formatter={(value) => [`Rs${value}`, "Revenue"]} />
                       <Legend />
                     </RechartsPieChart>
                   </ResponsiveContainer>
@@ -243,7 +249,10 @@ export default function AdminDashboardPage() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} labelFormatter={(label) => `${label}`} />
+                      <Tooltip
+                        formatter={(value) => [`Rs${value}`, "Revenue"]}
+                        labelFormatter={(label) => `${label}`}
+                      />
                       <Line type="monotone" dataKey="revenue" stroke="#8884d8" strokeWidth={2} />
                     </RechartsLineChart>
                   </ResponsiveContainer>

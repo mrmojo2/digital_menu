@@ -83,6 +83,9 @@ export default function AdminOrdersPage() {
         ordersData = await orderApi.getAllOrders()
       }
 
+      // Add this inside the fetchOrders function, right after getting the orders data
+      console.log("Orders from API:", ordersData.orders)
+
       // Sort orders by creation date (newest first)
       const sortedOrders = [...ordersData.orders].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
@@ -120,7 +123,7 @@ export default function AdminOrdersPage() {
 
     try {
       const statusData: OrderStatusInput = {
-        status: currentOrder.status as "pending" | "preparing" | "ready" | "served" | "cancelled",
+        status: currentOrder.status as "pending" | "preparing" | "served" | "complete" | "cancelled",
       }
 
       await orderApi.updateOrderStatus(currentOrder._id, statusData)
@@ -192,9 +195,9 @@ export default function AdminOrdersPage() {
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case "served":
+      case "complete":
         return "bg-green-100 text-green-800"
-      case "ready":
+      case "served":
         return "bg-blue-100 text-blue-800"
       case "preparing":
         return "bg-yellow-100 text-yellow-800"
@@ -207,7 +210,8 @@ export default function AdminOrdersPage() {
     }
   }
 
-  const getTableNumber = (table: Table | string) => {
+  const getTableNumber = (table: Table | string | undefined) => {
+    if (!table) return "Unknown Table"
     if (typeof table === "string") {
       const foundTable = tables.find((t) => t._id === table)
       return foundTable ? `Table ${foundTable.table_number}` : table
@@ -240,8 +244,8 @@ export default function AdminOrdersPage() {
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="preparing">Preparing</SelectItem>
-            <SelectItem value="ready">Ready</SelectItem>
             <SelectItem value="served">Served</SelectItem>
+            <SelectItem value="complete">Complete</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
           </SelectContent>
         </Select>
@@ -303,7 +307,7 @@ export default function AdminOrdersPage() {
                           <TableCell className="font-medium">{order.order_number}</TableCell>
                           <TableCell>{getTableNumber(order.table)}</TableCell>
                           <TableCell>{formatDate(order.created_at)}</TableCell>
-                          <TableCell>${order.total_amount.toFixed(2)}</TableCell>
+                          <TableCell>Rs{order.total_amount.toFixed(2)}</TableCell>
                           <TableCell>
                             <div
                               className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClass(order.status)}`}
@@ -416,15 +420,19 @@ export default function AdminOrdersPage() {
                       <TableRow key={index}>
                         <TableCell>{typeof item.item === "string" ? item.item : item.item.name}</TableCell>
                         <TableCell className="text-right">{item.quantity}</TableCell>
-                        <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
-                        <TableCell className="text-right">${(item.quantity * item.price).toFixed(2)}</TableCell>
+                        <TableCell className="text-right">
+                          {item.price !== undefined ? `Rs${item.price.toFixed(2)}` : "N/A"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.price !== undefined ? `Rs${(item.quantity * item.price).toFixed(2)}` : `Rs${0}`}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
                 <div className="flex justify-between font-medium mt-4 pt-4 border-t">
                   <span>Total</span>
-                  <span>${currentOrder.total_amount.toFixed(2)}</span>
+                  <span>Rs{currentOrder.total_amount.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -439,6 +447,7 @@ export default function AdminOrdersPage() {
       </Dialog>
 
       {/* Status Dialog */}
+      {console.log("Current order status:", currentOrder?.status)}
       <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -452,7 +461,7 @@ export default function AdminOrdersPage() {
                   <Label htmlFor="status">Status</Label>
                   <Select
                     value={currentOrder.status}
-                    onValueChange={(value: "pending" | "preparing" | "ready" | "served" | "cancelled") =>
+                    onValueChange={(value: "pending" | "preparing" | "served" | "complete" | "cancelled") =>
                       setCurrentOrder({ ...currentOrder, status: value })
                     }
                   >
@@ -462,15 +471,16 @@ export default function AdminOrdersPage() {
                     <SelectContent>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="preparing">Preparing</SelectItem>
-                      <SelectItem value="ready">Ready</SelectItem>
                       <SelectItem value="served">Served</SelectItem>
+                      <SelectItem value="complete">Complete</SelectItem>
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                {currentOrder.status === "served" && (
+                {currentOrder.status === "complete" && (
                   <p className="text-sm text-amber-600">
-                    Note: Setting status to "Served" will mark the table as available.
+                    {console.log("Showing note for complete status")}
+                    Note: Setting status to "Complete" will mark the table as available.
                   </p>
                 )}
               </div>
@@ -503,7 +513,7 @@ export default function AdminOrdersPage() {
                 <strong>Table:</strong> {getTableNumber(currentOrder.table)}
               </p>
               <p>
-                <strong>Total:</strong> ${currentOrder.total_amount.toFixed(2)}
+                <strong>Total:</strong> Rs{currentOrder.total_amount.toFixed(2)}
               </p>
               <p>
                 <strong>Status:</strong> {currentOrder.status}

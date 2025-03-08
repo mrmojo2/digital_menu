@@ -324,7 +324,10 @@ export interface OrderInput {
     item: string // MenuItem ID
     quantity: number
     price: number
-    customizations?: any[]
+    customizations?: Array<{
+      group: string
+      option: string
+    }>
   }[]
   total_amount: number
 }

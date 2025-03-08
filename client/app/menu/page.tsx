@@ -7,11 +7,19 @@ import { ArrowLeft, ShoppingCart, Plus, Minus } from "lucide-react"
 import { useSearchParams, useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   categoryApi,
   menuApi,
@@ -35,7 +43,21 @@ export default function MenuPage() {
   const [menuItems, setMenuItems] = useState<Record<string, MenuItem[]>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
-  const [cart, setCart] = useState<{ id: string; name: string; price: number; quantity: number }[]>([])
+  const [cart, setCart] = useState<
+    {
+      id: string
+      itemId: string
+      name: string
+      price: number
+      quantity: number
+      customOptions?: Record<string, string>
+    }[]
+  >([])
+
+  const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false)
+  const [currentCustomizeItem, setCurrentCustomizeItem] = useState<MenuItem | null>(null)
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
+  const [customizationPrice, setCustomizationPrice] = useState(0)
 
   // Fetch table, categories, and menu items on component mount
   useEffect(() => {
@@ -87,13 +109,32 @@ export default function MenuPage() {
 
         // Group items by category
         const groupedItems: Record<string, MenuItem[]> = {}
+        const uncategorizedId = "uncategorized"
 
         menuItems.forEach((item) => {
-          const categoryId = item.category._id
-          if (!groupedItems[categoryId]) {
-            groupedItems[categoryId] = []
+          // Skip unavailable items
+          if (item.is_available === false) return
+
+          if (!item.category) {
+            // Handle items with null category
+            if (!groupedItems[uncategorizedId]) {
+              groupedItems[uncategorizedId] = []
+            }
+            groupedItems[uncategorizedId].push({
+              ...item,
+              category: {
+                _id: uncategorizedId,
+                name: "Uncategorized",
+              },
+            })
+          } else {
+            // Handle items with valid category
+            const categoryId = item.category._id
+            if (!groupedItems[categoryId]) {
+              groupedItems[categoryId] = []
+            }
+            groupedItems[categoryId].push(item)
           }
-          groupedItems[categoryId].push(item)
         })
 
         setMenuItems(groupedItems)
@@ -112,26 +153,74 @@ export default function MenuPage() {
     fetchData()
   }, [tableId, toast, router])
 
-  const addToCart = (item: MenuItem) => {
+  const openCustomizeDialog = (item: MenuItem) => {
+    setCurrentCustomizeItem(item)
+    setSelectedOptions({})
+    setCustomizationPrice(0)
+    setIsCustomizeDialogOpen(true)
+  }
+
+  const addToCart = (item: MenuItem, customOptions?: Record<string, string>, additionalPrice = 0) => {
     setCart((prev) => {
-      const existingItem = prev.find((cartItem) => cartItem.id === item._id)
-      if (existingItem) {
-        return prev.map((cartItem) =>
-          cartItem.id === item._id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem,
-        )
+      const cartItemId = customOptions ? `${item._id}-${JSON.stringify(customOptions)}` : item._id
+      const existingItemIndex = prev.findIndex((cartItem) => cartItem.id === cartItemId)
+
+      if (existingItemIndex >= 0) {
+        // Item with same customizations exists, update quantity
+        const updatedCart = [...prev]
+        updatedCart[existingItemIndex].quantity += 1
+        return updatedCart
       } else {
-        return [...prev, { id: item._id, name: item.name, price: item.price, quantity: 1 }]
+        // Add new item with customizations
+        return [
+          ...prev,
+          {
+            id: cartItemId,
+            itemId: item._id,
+            name: item.name,
+            price: item.price + additionalPrice,
+            quantity: 1,
+            customOptions: customOptions || {},
+          },
+        ]
       }
     })
   }
 
-  const removeFromCart = (itemId: string) => {
+  const handleOptionSelect = (groupName: string, option: { name: string; price_addition: number }) => {
+    setSelectedOptions((prev) => {
+      const newOptions = { ...prev, [groupName]: option.name }
+
+      // Recalculate total customization price
+      let totalCustomPrice = 0
+      if (currentCustomizeItem?.customization_options) {
+        currentCustomizeItem.customization_options.forEach((group) => {
+          const selectedOption = group.options.find((opt) => opt.name === newOptions[group.name])
+          if (selectedOption) {
+            totalCustomPrice += selectedOption.price_addition
+          }
+        })
+      }
+
+      setCustomizationPrice(totalCustomPrice)
+      return newOptions
+    })
+  }
+
+  const addCustomizedItemToCart = () => {
+    if (!currentCustomizeItem) return
+
+    addToCart(currentCustomizeItem, selectedOptions, customizationPrice)
+    setIsCustomizeDialogOpen(false)
+  }
+
+  const removeFromCart = (cartItemId: string) => {
     setCart((prev) => {
-      const existingItem = prev.find((item) => item.id === itemId)
+      const existingItem = prev.find((item) => item.id === cartItemId)
       if (existingItem && existingItem.quantity > 1) {
-        return prev.map((item) => (item.id === itemId ? { ...item, quantity: item.quantity - 1 } : item))
+        return prev.map((item) => (item.id === cartItemId ? { ...item, quantity: item.quantity - 1 } : item))
       } else {
-        return prev.filter((item) => item.id !== itemId)
+        return prev.filter((item) => item.id !== cartItemId)
       }
     })
   }
@@ -141,11 +230,15 @@ export default function MenuPage() {
 
     setIsPlacingOrder(true)
     try {
-      // Prepare order items
+      // Prepare order items with customizations
       const orderItems = cart.map((item) => ({
-        item: item.id,
+        item: item.itemId,
         quantity: item.quantity,
         price: item.price,
+        customizations: Object.entries(item.customOptions || {}).map(([group, option]) => ({
+          group,
+          option,
+        })),
       }))
 
       // Calculate total amount
@@ -232,6 +325,15 @@ export default function MenuPage() {
                             <p className="text-sm text-muted-foreground">
                               ${item.price.toFixed(2)} x {item.quantity}
                             </p>
+                            {Object.keys(item.customOptions || {}).length > 0 && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {Object.entries(item.customOptions).map(([group, option]) => (
+                                  <div key={group}>
+                                    {group}: {option}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                           <div className="flex items-center">
                             <Button variant="outline" size="icon" onClick={() => removeFromCart(item.id)}>
@@ -242,11 +344,19 @@ export default function MenuPage() {
                               variant="outline"
                               size="icon"
                               onClick={() => {
+                                // Find the original menu item
                                 const menuItem = Object.values(menuItems)
                                   .flat()
-                                  .find((mi) => mi._id === item.id)
+                                  .find((mi) => mi._id === item.itemId)
+
                                 if (menuItem) {
-                                  addToCart(menuItem)
+                                  if (item.customOptions && Object.keys(item.customOptions).length > 0) {
+                                    // For customized items, just increment quantity
+                                    addToCart(menuItem, item.customOptions, item.price - menuItem.price)
+                                  } else {
+                                    // For regular items
+                                    addToCart(menuItem)
+                                  }
                                 }
                               }}
                             >
@@ -282,13 +392,18 @@ export default function MenuPage() {
             <p className="text-muted-foreground">No menu categories available.</p>
           </div>
         ) : (
-          <Tabs defaultValue={categories[0]?._id}>
+          <Tabs defaultValue={categories.length > 0 ? categories[0]?._id : "uncategorized"}>
             <TabsList className="mb-4 flex w-full overflow-x-auto">
               {categories.map((category) => (
                 <TabsTrigger key={category._id} value={category._id} className="flex-1">
                   {category.name}
                 </TabsTrigger>
               ))}
+              {menuItems["uncategorized"] && menuItems["uncategorized"].length > 0 && (
+                <TabsTrigger key="uncategorized" value="uncategorized" className="flex-1">
+                  Other Items
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {categories.map((category) => (
@@ -324,7 +439,13 @@ export default function MenuPage() {
                         </CardContent>
                         <CardFooter>
                           <Button
-                            onClick={() => addToCart(item)}
+                            onClick={() => {
+                              if (item.customization_options && item.customization_options.length > 0) {
+                                openCustomizeDialog(item)
+                              } else {
+                                addToCart(item)
+                              }
+                            }}
                             className="w-full"
                             disabled={item.is_available === false}
                           >
@@ -337,6 +458,53 @@ export default function MenuPage() {
                 )}
               </TabsContent>
             ))}
+
+            {menuItems["uncategorized"] && menuItems["uncategorized"].length > 0 && (
+              <TabsContent key="uncategorized" value="uncategorized" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {menuItems["uncategorized"]?.map((item) => (
+                    <Card key={item._id}>
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle>{item.name}</CardTitle>
+                            <CardDescription className="mt-1">{item.description}</CardDescription>
+                          </div>
+                          <Image
+                            src={item.image_url || "/placeholder.svg?height=100&width=100"}
+                            alt={item.name}
+                            width={80}
+                            height={80}
+                            className="rounded-md object-cover"
+                          />
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="font-bold">${item.price.toFixed(2)}</p>
+                        {item.is_available === false && (
+                          <p className="text-sm text-red-500 mt-1">Currently unavailable</p>
+                        )}
+                      </CardContent>
+                      <CardFooter>
+                        <Button
+                          onClick={() => {
+                            if (item.customization_options && item.customization_options.length > 0) {
+                              openCustomizeDialog(item)
+                            } else {
+                              addToCart(item)
+                            }
+                          }}
+                          className="w-full"
+                          disabled={item.is_available === false}
+                        >
+                          <Plus className="mr-2 h-4 w-4" /> Add to Order
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            )}
           </Tabs>
         )}
       </main>
@@ -347,6 +515,64 @@ export default function MenuPage() {
           </p>
         </div>
       </footer>
+      <Dialog open={isCustomizeDialogOpen} onOpenChange={setIsCustomizeDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Customize Your Order</DialogTitle>
+            <DialogDescription>
+              {currentCustomizeItem?.name} - ${currentCustomizeItem?.price.toFixed(2)}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {currentCustomizeItem?.customization_options?.map((group, groupIndex) => (
+              <div key={groupIndex} className="space-y-2">
+                <h3 className="font-medium">{group.name}</h3>
+                <div className="grid gap-2">
+                  {group.options.map((option, optionIndex) => (
+                    <div key={optionIndex} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id={`option-${groupIndex}-${optionIndex}`}
+                          name={`group-${groupIndex}`}
+                          checked={selectedOptions[group.name] === option.name}
+                          onChange={() => handleOptionSelect(group.name, option)}
+                          className="h-4 w-4 rounded-full"
+                        />
+                        <label htmlFor={`option-${groupIndex}-${optionIndex}`} className="text-sm">
+                          {option.name}
+                        </label>
+                      </div>
+                      {option.price_addition > 0 && (
+                        <span className="text-sm text-muted-foreground">+${option.price_addition.toFixed(2)}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {customizationPrice > 0 && (
+              <div className="pt-2 border-t">
+                <div className="flex justify-between">
+                  <span>Additional cost:</span>
+                  <span>${customizationPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-medium">
+                  <span>Total price:</span>
+                  <span>${(currentCustomizeItem?.price || 0 + customizationPrice).toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCustomizeDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={addCustomizedItemToCart}>Add to Order</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -24,6 +24,10 @@ const OrderSchema = new mongoose.Schema({
             required: true,
             min: 1,
         },
+        price: {
+            type:Number,
+            required:true,
+        },
         customizations: [{
             option_name: String,
             selection: String,
@@ -33,7 +37,7 @@ const OrderSchema = new mongoose.Schema({
     }],
     status: {
         type: String,
-        enum: ['pending', 'preparing', 'ready', 'served', 'cancelled'],
+        enum: ['pending', 'preparing', 'served', 'complete','cancelled'],
         default: 'pending',
     },
     total_amount: {

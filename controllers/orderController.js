@@ -15,6 +15,13 @@ const createOrder = async (req, res) => {
         throw new HttpError('Please provide all required values', StatusCodes.BAD_REQUEST)
     }
 
+    // Validate that each item has a price
+    for (const item of items) {
+        if (!item.price || item.price <= 0) {
+            throw new HttpError('Each item must have a valid price', StatusCodes.BAD_REQUEST)
+        }
+    }
+
     const tableExists = await Table.findById(table)
     if (!tableExists) {
         throw new HttpError('Invalid table', StatusCodes.BAD_REQUEST)
@@ -46,6 +53,15 @@ const getSingleOrder = async (req, res) => {
 const updateOrder = async (req, res) => {
     const { id: orderId } = req.params
     const { items, total_amount } = req.body
+
+    // Validate that each item has a price if items are being updated
+    if (items) {
+        for (const item of items) {
+            if (!item.price || item.price <= 0) {
+                throw new HttpError('Each item must have a valid price', StatusCodes.BAD_REQUEST)
+            }
+        }
+    }
 
     const order = await Order.findOneAndUpdate(
         { _id: orderId },
@@ -91,7 +107,7 @@ const updateOrderStatus = async (req, res) => {
         throw new HttpError(`No order with id: ${orderId}`, StatusCodes.NOT_FOUND)
     }
 
-    if (status === 'served') {
+    if (status === 'complete') {
         await Table.findByIdAndUpdate(order.table, { status: 'available', current_order: null })
     }
 

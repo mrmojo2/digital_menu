@@ -11,6 +11,7 @@ Menu Management Routes:
 - GET    /menu/:id          - Get single menu item
 - PATCH  /menu/:id          - Update menu item
 - DELETE /menu/:id          - Delete menu item
+- PATCH  /menu/image/:id    - update image for a menu item
 - GET    /menu/category/:categoryId - Get items by category
 
 Category Routes:
@@ -19,6 +20,7 @@ Category Routes:
 - GET    /categories/:id    - Get single category
 - PATCH  /categories/:id    - Update category
 - DELETE /categories/:id    - Delete category
+- PATCH  /categories/image/:id    - update image for a category item
 
 Table Management Routes:
 - GET    /tables           - Get all tables

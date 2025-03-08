@@ -23,7 +23,7 @@ const MenuItemSchema = new mongoose.Schema({
     },
     image_url: {
         type: String,
-        default: 'default-food-image.jpg',
+        default: 'https://res.cloudinary.com/ducxipxkt/image/upload/v1741362559/digital_menu/MenuItems/default_nddayf.jpg',
     },
     customization_options: [{
         name: String,

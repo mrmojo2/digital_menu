@@ -46,7 +46,7 @@ app.use(fileUpload({ useTempFiles: true }))
 
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/menu',menuRouter);
-app.use('/api/v1/category',categoryrRouter);
+app.use('/api/v1/categories',categoryrRouter);
 app.use('/api/v1/tables',tableRouter);
 app.use('/api/v1/orders',orderRouter);
 
